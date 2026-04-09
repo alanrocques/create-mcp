@@ -1,0 +1,9 @@
+services:
+  {{name}}:
+    build: .
+{{#if (eq transport "http")}}
+    ports:
+      - "8000:8000"
+{{/if}}
+    env_file:
+      - .env

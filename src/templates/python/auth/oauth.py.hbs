@@ -1,0 +1,46 @@
+"""OAuth 2.1 token validation for MCP servers.
+
+Per the MCP 2025-11-25 spec, HTTP-based MCP servers SHOULD support OAuth 2.1
+for authentication. This module provides token validation using JWKS.
+
+Required environment variables:
+    OAUTH_ISSUER_URL - The OAuth issuer URL
+    OAUTH_AUDIENCE   - The expected audience claim
+"""
+
+import os
+import httpx
+from jose import jwt, JWTError
+
+OAUTH_ISSUER_URL = os.environ.get("OAUTH_ISSUER_URL", "")
+OAUTH_AUDIENCE = os.environ.get("OAUTH_AUDIENCE", "")
+
+_jwks_cache: dict | None = None
+
+
+async def get_jwks() -> dict:
+    global _jwks_cache
+    if _jwks_cache is None:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{OAUTH_ISSUER_URL}/.well-known/jwks.json")
+            resp.raise_for_status()
+            _jwks_cache = resp.json()
+    return _jwks_cache
+
+
+def validate_token(token: str) -> dict:
+    """Validate a JWT token and return the decoded payload."""
+    if not OAUTH_ISSUER_URL or not OAUTH_AUDIENCE:
+        raise ValueError("OAUTH_ISSUER_URL and OAUTH_AUDIENCE must be set")
+
+    try:
+        payload = jwt.decode(
+            token,
+            _jwks_cache or {},
+            algorithms=["RS256"],
+            audience=OAUTH_AUDIENCE,
+            issuer=OAUTH_ISSUER_URL,
+        )
+        return payload
+    except JWTError as e:
+        raise ValueError(f"Invalid token: {e}")

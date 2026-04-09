@@ -1,0 +1,48 @@
+import pytest
+from mcp.server.fastmcp import FastMCP
+
+{{#if (includes features "tools")}}
+from {{pythonModuleName}}.tools import register_tools
+{{/if}}
+{{#if (includes features "resources")}}
+from {{pythonModuleName}}.resources import register_resources
+{{/if}}
+{{#if (includes features "prompts")}}
+from {{pythonModuleName}}.prompts import register_prompts
+{{/if}}
+
+
+@pytest.fixture
+def mcp_server():
+    server = FastMCP("test")
+{{#if (includes features "tools")}}
+    register_tools(server)
+{{/if}}
+{{#if (includes features "resources")}}
+    register_resources(server)
+{{/if}}
+{{#if (includes features "prompts")}}
+    register_prompts(server)
+{{/if}}
+    return server
+
+
+{{#if (includes features "tools")}}
+@pytest.mark.anyio
+async def test_hello_tool(mcp_server):
+    result = await mcp_server.call_tool("hello", {"name": "World"})
+    assert "Hello, World!" in str(result)
+
+
+@pytest.mark.anyio
+async def test_get_time_tool(mcp_server):
+    result = await mcp_server.call_tool("get_time", {})
+    assert "Current time:" in str(result)
+{{/if}}
+
+{{#if (includes features "resources")}}
+@pytest.mark.anyio
+async def test_server_info_resource(mcp_server):
+    result = await mcp_server.read_resource("info://server")
+    assert "{{name}}" in str(result)
+{{/if}}

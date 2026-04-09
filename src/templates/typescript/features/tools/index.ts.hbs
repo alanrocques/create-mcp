@@ -1,0 +1,38 @@
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
+
+export function registerTools(server: McpServer): void {
+  server.registerTool(
+    "hello",
+    {
+      description: "Says hello to a name you provide",
+      inputSchema: {
+        name: z.string().describe("The name to greet"),
+      },
+    },
+    async ({ name }) => ({
+      content: [
+        {
+          type: "text" as const,
+          text: `Hello, ${name}! Welcome to {{name}}.`,
+        },
+      ],
+    })
+  );
+
+  server.registerTool(
+    "get-time",
+    {
+      description: "Returns the current date and time",
+      inputSchema: {},
+    },
+    async () => ({
+      content: [
+        {
+          type: "text" as const,
+          text: `Current time: ${new Date().toISOString()}`,
+        },
+      ],
+    })
+  );
+}

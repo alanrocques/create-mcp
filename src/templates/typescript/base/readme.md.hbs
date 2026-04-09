@@ -1,0 +1,68 @@
+# {{name}}
+
+An MCP server built with [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol/typescript-sdk).
+
+## Quick Start
+
+```bash
+npm install
+npm run dev
+```
+
+## Testing with MCP Inspector
+
+```bash
+npm run inspect
+```
+
+This launches the [MCP Inspector](https://github.com/modelcontextprotocol/inspector) connected to your server.
+
+## Add to Claude Desktop
+
+{{#if (eq transport "stdio")}}
+Add this to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "{{name}}": {
+      "command": "node",
+      "args": ["/ABSOLUTE/PATH/TO/{{name}}/build/index.js"]
+    }
+  }
+}
+```
+{{else}}
+Start the server, then configure your MCP client to connect to:
+
+```
+http://localhost:3000/mcp
+```
+{{/if}}
+
+## Adding New Tools
+
+Create a new tool in `src/tools/index.ts`:
+
+```typescript
+server.registerTool("my-tool", {
+  description: "Description of my tool",
+  inputSchema: {
+    param: z.string().describe("A parameter"),
+  },
+}, async ({ param }) => ({
+  content: [{ type: "text", text: `Result: ${param}` }],
+}));
+```
+
+## Scripts
+
+- `npm run dev` — Start the server in development mode
+- `npm run build` — Build for production
+- `npm test` — Run tests
+- `npm run inspect` — Test with MCP Inspector
+
+## Learn More
+
+- [Model Context Protocol](https://modelcontextprotocol.io)
+- [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)

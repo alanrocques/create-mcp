@@ -1,0 +1,42 @@
+{
+  "name": "create-mcp",
+  "version": "0.1.0",
+  "description": "CLI scaffolding tool that generates production-ready MCP servers",
+  "type": "module",
+  "bin": {
+    "create-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "src/templates"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "scaffolding",
+    "cli",
+    "create"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@clack/prompts": "^0.9.1",
+    "commander": "^13.1.0",
+    "execa": "^9.5.2",
+    "fs-extra": "^11.3.0",
+    "handlebars": "^4.7.8",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^22.15.3",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.2"
+  }
+}

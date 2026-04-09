@@ -1,0 +1,16 @@
+"""AWS Lambda handler for {{name}} MCP server."""
+
+import json
+
+
+def handler(event, context):
+    """Lambda handler that wraps the MCP server.
+
+    Note: Lambda is stateless. For full MCP session support,
+    consider using a persistent backing store or DynamoDB for session state.
+    """
+    return {
+        "statusCode": 200,
+        "headers": {"Content-Type": "application/json"},
+        "body": json.dumps({"message": "{{name}} MCP server running on Lambda"}),
+    }

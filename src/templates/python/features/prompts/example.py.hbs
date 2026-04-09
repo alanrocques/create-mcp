@@ -1,0 +1,5 @@
+def register_prompts(mcp):
+    @mcp.prompt()
+    def summarize(text: str) -> str:
+        """Summarize the provided text."""
+        return f"Please summarize the following text:\n\n{text}"

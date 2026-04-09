@@ -1,0 +1,60 @@
+# {{name}}
+
+An MCP server built with [FastMCP](https://github.com/jlowin/fastmcp).
+
+## Quick Start
+
+```bash
+uv sync
+uv run {{pythonModuleName}}
+```
+
+## Testing with MCP Inspector
+
+```bash
+npx @modelcontextprotocol/inspector uv run {{pythonModuleName}}
+```
+
+## Add to Claude Desktop
+
+{{#if (eq transport "stdio")}}
+Add this to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "{{name}}": {
+      "command": "uv",
+      "args": ["--directory", "/ABSOLUTE/PATH/TO/{{name}}", "run", "{{pythonModuleName}}"]
+    }
+  }
+}
+```
+{{else}}
+Start the server, then configure your MCP client to connect to:
+
+```
+http://localhost:8000/mcp
+```
+{{/if}}
+
+## Adding New Tools
+
+Add a new tool in `src/{{pythonModuleName}}/tools/__init__.py`:
+
+```python
+@mcp.tool()
+def my_tool(param: str) -> str:
+    """Description of my tool."""
+    return f"Result: {param}"
+```
+
+## Scripts
+
+- `uv run {{pythonModuleName}}` — Start the server
+- `uv run pytest` — Run tests
+
+## Learn More
+
+- [Model Context Protocol](https://modelcontextprotocol.io)
+- [FastMCP](https://github.com/jlowin/fastmcp)

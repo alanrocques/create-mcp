@@ -1,0 +1,17 @@
+"""API Key validation for MCP servers.
+
+Required environment variable:
+    API_KEY - The expected API key
+"""
+
+import os
+import hmac
+
+API_KEY = os.environ.get("API_KEY", "")
+
+
+def validate_api_key(key: str) -> bool:
+    """Validate an API key using timing-safe comparison."""
+    if not API_KEY:
+        raise ValueError("API_KEY environment variable must be set")
+    return hmac.compare_digest(key, API_KEY)

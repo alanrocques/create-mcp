@@ -1,0 +1,48 @@
+import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { randomUUID } from "node:crypto";
+{{#if (includes features "tools")}}
+import { registerTools } from "./tools/index.js";
+{{/if}}
+{{#if (includes features "resources")}}
+import { registerResources } from "./resources/index.js";
+{{/if}}
+{{#if (includes features "prompts")}}
+import { registerPrompts } from "./prompts/index.js";
+{{/if}}
+
+export async function handler(
+  event: APIGatewayProxyEvent
+): Promise<APIGatewayProxyResult> {
+  const server = new McpServer({
+    name: "{{name}}",
+    version: "0.1.0",
+  });
+
+{{#if (includes features "tools")}}
+  registerTools(server);
+{{/if}}
+{{#if (includes features "resources")}}
+  registerResources(server);
+{{/if}}
+{{#if (includes features "prompts")}}
+  registerPrompts(server);
+{{/if}}
+
+  // Note: Lambda is stateless. For full MCP session support,
+  // consider using a persistent backing store or DynamoDB for session state.
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: () => randomUUID(),
+  });
+
+  await server.connect(transport);
+
+  // Adapt API Gateway event to transport
+  // This is a simplified adapter — extend as needed for your use case
+  return {
+    statusCode: 200,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: "MCP server running on Lambda" }),
+  };
+}

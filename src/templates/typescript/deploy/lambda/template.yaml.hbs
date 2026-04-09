@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: {{name}} MCP server
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs22.x
+
+Resources:
+  McpFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: build/handler.handler
+      CodeUri: .
+      Events:
+        McpApi:
+          Type: Api
+          Properties:
+            Path: /mcp
+            Method: ANY
+
+Outputs:
+  McpApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/mcp"

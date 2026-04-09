@@ -1,0 +1,13 @@
+from datetime import datetime
+
+
+def register_tools(mcp):
+    @mcp.tool()
+    def hello(name: str) -> str:
+        """Says hello to a name you provide."""
+        return f"Hello, {name}! Welcome to {{name}}."
+
+    @mcp.tool()
+    def get_time() -> str:
+        """Returns the current date and time."""
+        return f"Current time: {datetime.now().isoformat()}"

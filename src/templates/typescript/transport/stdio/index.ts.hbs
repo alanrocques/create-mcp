@@ -1,0 +1,39 @@
+#!/usr/bin/env node
+
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+{{#if (includes features "tools")}}
+import { registerTools } from "./tools/index.js";
+{{/if}}
+{{#if (includes features "resources")}}
+import { registerResources } from "./resources/index.js";
+{{/if}}
+{{#if (includes features "prompts")}}
+import { registerPrompts } from "./prompts/index.js";
+{{/if}}
+
+const server = new McpServer({
+  name: "{{name}}",
+  version: "0.1.0",
+});
+
+{{#if (includes features "tools")}}
+registerTools(server);
+{{/if}}
+{{#if (includes features "resources")}}
+registerResources(server);
+{{/if}}
+{{#if (includes features "prompts")}}
+registerPrompts(server);
+{{/if}}
+
+async function main() {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  console.error("{{name}} MCP server running on stdio");
+}
+
+main().catch((error) => {
+  console.error("Fatal error:", error);
+  process.exit(1);
+});

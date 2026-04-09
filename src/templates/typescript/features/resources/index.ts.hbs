@@ -1,0 +1,28 @@
+import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+
+export function registerResources(server: McpServer): void {
+  server.registerResource(
+    "server-info",
+    "info://server",
+    {
+      description: "Information about this MCP server",
+      mimeType: "application/json",
+    },
+    async (uri) => ({
+      contents: [
+        {
+          uri: uri.href,
+          text: JSON.stringify(
+            {
+              name: "{{name}}",
+              version: "0.1.0",
+              uptime: process.uptime(),
+            },
+            null,
+            2
+          ),
+        },
+      ],
+    })
+  );
+}

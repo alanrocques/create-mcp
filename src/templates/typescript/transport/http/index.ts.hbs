@@ -1,0 +1,102 @@
+#!/usr/bin/env node
+
+import express from "express";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { randomUUID } from "node:crypto";
+{{#if (includes features "tools")}}
+import { registerTools } from "./tools/index.js";
+{{/if}}
+{{#if (includes features "resources")}}
+import { registerResources } from "./resources/index.js";
+{{/if}}
+{{#if (includes features "prompts")}}
+import { registerPrompts } from "./prompts/index.js";
+{{/if}}
+{{#if (eq auth "oauth")}}
+import { validateOAuthToken } from "./auth/oauth.js";
+{{/if}}
+{{#if (eq auth "apikey")}}
+import { validateApiKey } from "./auth/apikey.js";
+{{/if}}
+
+const app = express();
+app.use(express.json());
+
+const PORT = parseInt(process.env.PORT || "3000", 10);
+
+// Map to store transports by session ID
+const transports = new Map<string, StreamableHTTPServerTransport>();
+
+{{#if (eq auth "oauth")}}
+app.use("/mcp", validateOAuthToken);
+{{/if}}
+{{#if (eq auth "apikey")}}
+app.use("/mcp", validateApiKey);
+{{/if}}
+
+app.post("/mcp", async (req, res) => {
+  const sessionId = req.headers["mcp-session-id"] as string | undefined;
+
+  if (sessionId && transports.has(sessionId)) {
+    const transport = transports.get(sessionId)!;
+    await transport.handleRequest(req, res);
+    return;
+  }
+
+  // New session
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: () => randomUUID(),
+    onsessioninitialized: (id) => {
+      transports.set(id, transport);
+    },
+  });
+
+  transport.onclose = () => {
+    const id = [...transports.entries()].find(([, t]) => t === transport)?.[0];
+    if (id) transports.delete(id);
+  };
+
+  const server = new McpServer({
+    name: "{{name}}",
+    version: "0.1.0",
+  });
+
+{{#if (includes features "tools")}}
+  registerTools(server);
+{{/if}}
+{{#if (includes features "resources")}}
+  registerResources(server);
+{{/if}}
+{{#if (includes features "prompts")}}
+  registerPrompts(server);
+{{/if}}
+
+  await server.connect(transport);
+  await transport.handleRequest(req, res);
+});
+
+app.get("/mcp", async (req, res) => {
+  const sessionId = req.headers["mcp-session-id"] as string | undefined;
+  if (!sessionId || !transports.has(sessionId)) {
+    res.status(400).json({ error: "Invalid or missing session ID" });
+    return;
+  }
+  const transport = transports.get(sessionId)!;
+  await transport.handleRequest(req, res);
+});
+
+app.delete("/mcp", async (req, res) => {
+  const sessionId = req.headers["mcp-session-id"] as string | undefined;
+  if (!sessionId || !transports.has(sessionId)) {
+    res.status(400).json({ error: "Invalid or missing session ID" });
+    return;
+  }
+  const transport = transports.get(sessionId)!;
+  await transport.handleRequest(req, res);
+  transports.delete(sessionId);
+});
+
+app.listen(PORT, () => {
+  console.log(`{{name}} MCP server listening on http://localhost:${PORT}/mcp`);
+});

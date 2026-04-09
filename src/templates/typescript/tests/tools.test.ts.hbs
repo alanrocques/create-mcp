@@ -1,0 +1,111 @@
+import { describe, it, expect } from "vitest";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
+{{#if (includes features "tools")}}
+import { registerTools } from "../src/tools/index.js";
+{{/if}}
+{{#if (includes features "resources")}}
+import { registerResources } from "../src/resources/index.js";
+{{/if}}
+{{#if (includes features "prompts")}}
+import { registerPrompts } from "../src/prompts/index.js";
+{{/if}}
+
+async function createTestClient(server: McpServer) {
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  await server.connect(serverTransport);
+  const client = new Client({ name: "test-client", version: "0.1.0" });
+  await client.connect(clientTransport);
+  return client;
+}
+
+describe("{{name}} MCP Server", () => {
+{{#if (includes features "tools")}}
+  describe("Tools", () => {
+    it("should list tools", async () => {
+      const server = new McpServer({ name: "test", version: "0.1.0" });
+      registerTools(server);
+      const client = await createTestClient(server);
+
+      const { tools } = await client.listTools();
+      expect(tools.length).toBeGreaterThan(0);
+      expect(tools.map((t) => t.name)).toContain("hello");
+      expect(tools.map((t) => t.name)).toContain("get-time");
+    });
+
+    it("should execute hello tool", async () => {
+      const server = new McpServer({ name: "test", version: "0.1.0" });
+      registerTools(server);
+      const client = await createTestClient(server);
+
+      const result = await client.callTool({
+        name: "hello",
+        arguments: { name: "World" },
+      });
+      const text = (result.content as Array<{ type: string; text: string }>)[0].text;
+      expect(text).toContain("Hello, World!");
+    });
+
+    it("should execute get-time tool", async () => {
+      const server = new McpServer({ name: "test", version: "0.1.0" });
+      registerTools(server);
+      const client = await createTestClient(server);
+
+      const result = await client.callTool({ name: "get-time", arguments: {} });
+      const text = (result.content as Array<{ type: string; text: string }>)[0].text;
+      expect(text).toContain("Current time:");
+    });
+  });
+{{/if}}
+
+{{#if (includes features "resources")}}
+  describe("Resources", () => {
+    it("should list resources", async () => {
+      const server = new McpServer({ name: "test", version: "0.1.0" });
+      registerResources(server);
+      const client = await createTestClient(server);
+
+      const { resources } = await client.listResources();
+      expect(resources.length).toBeGreaterThan(0);
+    });
+
+    it("should read server-info resource", async () => {
+      const server = new McpServer({ name: "test", version: "0.1.0" });
+      registerResources(server);
+      const client = await createTestClient(server);
+
+      const result = await client.readResource({ uri: "info://server" });
+      const text = (result.contents[0] as { text: string }).text;
+      const data = JSON.parse(text);
+      expect(data.name).toBe("{{name}}");
+    });
+  });
+{{/if}}
+
+{{#if (includes features "prompts")}}
+  describe("Prompts", () => {
+    it("should list prompts", async () => {
+      const server = new McpServer({ name: "test", version: "0.1.0" });
+      registerPrompts(server);
+      const client = await createTestClient(server);
+
+      const { prompts } = await client.listPrompts();
+      expect(prompts.length).toBeGreaterThan(0);
+      expect(prompts.map((pr) => pr.name)).toContain("summarize");
+    });
+
+    it("should get summarize prompt", async () => {
+      const server = new McpServer({ name: "test", version: "0.1.0" });
+      registerPrompts(server);
+      const client = await createTestClient(server);
+
+      const result = await client.getPrompt({
+        name: "summarize",
+        arguments: { text: "Hello world" },
+      });
+      expect(result.messages.length).toBeGreaterThan(0);
+    });
+  });
+{{/if}}
+});

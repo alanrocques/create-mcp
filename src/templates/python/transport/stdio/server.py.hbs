@@ -1,0 +1,26 @@
+from mcp.server.fastmcp import FastMCP
+
+mcp = FastMCP("{{name}}")
+
+{{#if (includes features "tools")}}
+from {{pythonModuleName}}.tools import register_tools
+
+register_tools(mcp)
+{{/if}}
+{{#if (includes features "resources")}}
+from {{pythonModuleName}}.resources import register_resources
+
+register_resources(mcp)
+{{/if}}
+{{#if (includes features "prompts")}}
+from {{pythonModuleName}}.prompts import register_prompts
+
+register_prompts(mcp)
+{{/if}}
+
+def main():
+    mcp.run(transport="stdio")
+
+
+if __name__ == "__main__":
+    main()

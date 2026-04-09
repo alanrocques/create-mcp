@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:gofastmcp.com)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(node dist/index.js)",
+      "Bash(node dist/index.js test-ts-server --lang typescript --transport stdio --features tools,resources,prompts -y)",
+      "Bash(npm test:*)",
+      "Bash(node dist/index.js test-py-server --lang python --transport stdio --features tools,resources,prompts -y)",
+      "Bash(uv run:*)",
+      "Bash(node dist/index.js test-http-server --lang typescript --transport http --auth oauth --deploy docker --features tools -y)",
+      "Bash(node dist/index.js fail-test --transport stdio --auth oauth -y)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(node dist/index.js e2e-test --lang typescript --transport stdio --features tools,resources,prompts -y)"
+    ]
+  }
+}
